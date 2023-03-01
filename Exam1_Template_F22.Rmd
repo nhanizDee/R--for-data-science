@@ -1,0 +1,194 @@
+---
+title: "Exam 1 Template"
+author: "Tuan Pham"
+date: "DATA 2401 - Srping 2023"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+
+> “We will be honest in all our academic activities and will not tolerate dishonesty.” 
+
+> – UHD Academic Honor Code
+
+
+&nbsp;
+
+&nbsp;
+
+You are submitting this exam under the UHD honor code. Answer all below questions. Complete the questions, knit the file to html, commit and push to your repository *BEFORE 2:45* and turn in link to the repository to Blackboard. __Any commit made after 2:45 pm will not be graded.__ 
+
+\newpage 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+### Part 1 (20 points)
+
+* You will get 10 points of credit for a properly knit RMD/html(or pdf) file.
+* You will get 10 points of credit for a properly committed and pushed GitHub repository, with clear and descriptive commit descriptions. 
+
+## Part 2 (10 points)
+
+In your own words, *briefly* describe the difference between saving, committing, and pushing. 
+
+Saving refers to the act of saving changes made to a file in your local repository.When you save changes, the changes are stored on your local machine, but they have not been shared with other collaborators.
+
+Committing is the process of taking the saved changes and recording them as a permanent part of the repository's history. When you commit changes, you are creating a new version of the files in your local repository. This allows you to keep track of changes over time and revert back to previous versions if necessary.
+
+Pushing is the process of sending the committed changes to a remote repository, typically a server. When you push changes, they become available to other collaborators who have access to the same remote repository. This allows multiple people to work on the same project and share changes with each other.
+## Part 3 (10 points)
+
+* [2 points] Create a vector named `numbers` that contains the odd numbers from 3 to 15. 
+
+* [3 points] Create a second vector called `half_numbers` that contains the elements of `numbers` divided by 2
+
+* [2 points] Add the string "puppies" to the end of `numbers`. 
+
+* [3 points] Try to divide the new vector by two. Does it work? Why or why not? 
+
+It does not work because the `numbers` contains both string and numbers, R will not execute a math calculation on strings or vector contains string(s)
+```{r}
+numbers <- seq(3,15,2)
+half_number <- numbers/2
+addstring <- c(numbers,'puppies')
+#divide vector into 2 vectors
+```
+
+## Part 4 (15 points)
+
+You run a small dog daycare. This is the data you have on the dogs that come to your business.
+
+```{r}
+names <- c("Fido", "Doug", "Bella", "Max", "Cooper", "Lucy", "Duke", "Barkley")
+age <- c(2, 5, 4, 6, 1, 13, 9, 3)
+weight <- c(14, 89, 32, 46, 55, 7, 25, 36)
+
+avg_age <- mean(age)
+avg_weight <- mean(weight)
+
+light_dog <- min(weight)
+oldest_dog_name <- names[which.max(age)]
+age_heaviest_dog <- age[which.max(weight)]
+current_age_after_2yrs <- age + 2
+add_name <- c(names, "Daisy")
+add_age <- c(age, 3)
+add_weight <- c(weight, 39)
+```
+
+* [2 points] Find the average weight and age of the dogs.
+* [2 points] How light is the dog with the lowest weight?
+* [3 points] What is the name of the oldest dog?
+* [3 points] What is the age of the heaviest dog?
+* [2 points] It's been 2 years since you entered this information! Change `age` to reflect that. 
+* [3 points] A new dog is here! Her name is Daisy, she is 3 years old, and weighs 39 pounds. Add her to your data. 
+
+
+## Part 5 (10 points)
+
+In baseball, the slugging percentage is computed with 5 variables, the number of singles, doubles, triples, homeruns and at-bats. We abbreviate these 1B, 2B, 3B, HR and AB. 
+
+1. [7 points] Write a function that takes these 5 values as arguments and returns the slugging percentage for that player. 
+
+$$  \frac{(1B + 2B\times2 + 3B \times 3 + HR\times 4)}{AB} $$
+```{r}
+slugging_percentage <- function(a, b, c, d, e) {
+  (a + 2*b + 3*c + 4*d)/ e
+  }
+
+```
+
+2. [3 points] The Astros player Jose Altuve currently has the following stats: 
+
+`1B = 89, 2B = 34, 3B = 0, HR = 25, AB = 499 `
+
+Use your function to find his slugging percentage. 
+
+
+## Part 6 (15 points)
+
+1. [6 points] Write a function that takes a vector `x` and returns a vector with the square root of each element of the vector. 
+
+> For example, if you pass the function a vector containing 4 and 16, it should return a vector containing 2 and 4. 
+
+```{r}
+sqr_root_vector <- function(x) {
+  result <- sqrt(x)
+}
+```
+2. [6 points] Write a second function that does the above, but also removes any negative values or changes them to 0.
+
+> For example, if you pass *this* function -4 and 16, it should return either 0 and 4 or just 4.
+
+```{r}
+sq_rt_vector <- function(x) {
+   x[x < 0] <- 0
+
+   result <- sqrt(x)
+  
+  return(result)
+}
+  
+
+```
+3. [3 points] Test your second function on the following vectors:
+
+```{r}
+test1 <- c(1:10)
+test2 <- c(-4:4)
+
+sq_rt_vector(test1)
+sq_rt_vector(test2)
+```
+
+
+## Part 7 (10+3 points)
+
+A fancy tech company gives employees ratings of 1, 2 and 3, which are used to compute their annual bonuses. If an employee gets a score of 3, their bonus is 15% of their salary, if they get a 2, their bonus is 10% of their salary, if they get a 1, their bonus is 5% of their salary. 
+
+Rating | Bonus Percent
+:-----:|:-----:
+3|15%
+2|10%
+1|5%
+
+1. [8 points] Write a function that takes the employees score and their salary as arguments and returns their bonus amount for the year. 
+```{r}
+bonus <- function(x,y) {
+  class <- c(1,2,3)
+  rate <- c(.05, .1, .15)
+  if (y == 1) {
+    return(bonus <- x * .05)
+  } else if (y==2){
+    return(bonus <- x * .1)
+  }else{
+    return(bonus <- x * .15)
+  }
+
+}
+Fitz <- bonus(100000, 1)
+```
+2. [2 points] Fitz makes $100,000 a year, but only got a score of 1. Use your function to calculate his bonus.
+
+3. [3 extra credit points] Modify your function so that it returns the full pay for the year, salary and bonus combined. How much will Fitz make in total?
+```{r}
+fullpay <- function(x,y) {
+  class <- c(1,2,3)
+  rate <- c(.05, .1, .15)
+  if (y == class[1]) {
+    return(bonus <- x * (1 + rate[1]))
+  } else if (y == class[2]){
+    return(bonus <- x * (1+ rate[2]))
+  }else{
+    return(bonus <- x * (1 + rate[3]))
+  }
+
+}
+Fitz <- fullpay(100000, 1)
+```

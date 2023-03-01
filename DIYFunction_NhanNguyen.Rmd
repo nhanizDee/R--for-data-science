@@ -1,0 +1,109 @@
+---
+title: "DIYFunction_Feb 2"
+author: "Nhan Nguyen"
+date: "Data 2401 Feb 2,2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown Function
+
+```{r plus_to-number function}
+z <- 7 # z use as global, refernece, an instant that appear
+total<- function(x,y){ # khong co dau ngoac moc van chay
+  x+y+z
+}
+
+total(5,8)
+```
+
+```{r}
+#making a funtion that transfer do F to do C
+transfer_F_to_C <- function(Fa){
+  Ce<- (Fa - 32)/1.8000 
+  return(Ce)
+}
+
+transfer_F_to_C(45)
+ #Expand the previous function so that it takes a temperature in Fahrenheit and a distance in feet and returns both the temperature in C and the distance in meters (you’ll likely need to remember the c() function!)
+
+transfer_both <- function(Fa,Distance){
+  Ce<- (Fa - 32)/1.8000 
+  Distance_Meter<- Distance * 0.304
+  ans <- c(Ce,Distance_Meter)# return function always take 1 value per time it run so use C() to group more than one value in to one group of vector and let return call that vector
+  return(ans)
+}
+transfer_both(102,50)
+```
+
+
+```{r}
+num_coffees <-2
+if (num_coffees > 4) {
+  print("No more coffee for you")
+} else if (num_coffees == 0) {
+  print("Go get coffee now!!")
+} else {
+  print("Sure, have another cup")
+}
+
+
+```
+
+
+```{r}
+
+get_coffee <- function(current_cups){
+  if (current_cups <= 4){
+    current_cups = current_cups + 1
+    return(current_cups)
+  } else {
+    return(current_cups)
+  }
+}
+
+## how do we use this?
+cups <- 5
+cups <- get_coffee(cups)
+cups
+```
+
+
+
+```{r}
+#Function debugging
+#Q1:
+fig_out_vlue <- function(x){
+  if(x>0){
+    print(" this is positive")
+  }else if(x==0){
+    print(" this is 0")
+  } else {
+    print(" this is negative")
+  }
+}
+
+fig_out_vlue(1)
+fig_out_vlue(0)
+fig_out_vlue(-1)
+
+
+#Q2:
+
+abs_vlue <- function(x){
+  if(x >= 0){
+    return(x)
+  } else {
+    return(-x)
+  }
+}
+
+abs_vlue(-5)
+abs_vlue(0)
+abs_vlue(-1)
+
+```
+```

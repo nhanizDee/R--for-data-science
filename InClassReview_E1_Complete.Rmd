@@ -1,0 +1,235 @@
+---
+title: "In Class Review"
+author: "Dr. Shoemaker"
+date: "DATA 2401"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+**Note: Your exam will be in a similar format to this (RMarkdown File with Questions and Code chunks for your answers), so make SURE you have the process for knitting to html or pdf working.** 
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# uncomment these, run them ONCE, then recomment them
+# install.packages(tidyverse)
+# install.packages(ggplot2)
+
+
+library(tidyverse)
+library(ggplot2)
+
+```
+
+## Indexing 
+
+1. The below code chunk saves some built-in data about diamonds to vectors in your environment. (Run `? diamonds` in your console for more information, you may need to install and load the `tidyverse` and `ggplot2` libraries using the code in the chunk above). Using indexing and the tools you've learned, find the following:
+
+   - What's the mean price of diamonds? The mean carat value? 
+   - How many diamonds are more than 4 carats?
+   - What's the carat weight of the largest diamond?
+   - What's the price of most expensive diamond? 
+   - Assuming that these are paired information (`carats[1]` and `price[1]` are information about the *same diamond*), how many carats is the most expensive diamond? How expensive is the biggest diamond? 
+      + I've added some extra questions below for the types of thing you can answer. 
+
+```{r}
+# I'm taking these out of the included data dataframe so we can work with them as their own vectors. 
+carats <- diamonds$carat
+price <- diamonds$price
+
+```
+
+```{r}
+# What's the mean price of diamonds? The mean carat value? 
+mean(price)
+
+# How many diamonds are more than 4 carats?
+sum(carats > 4)
+length(carats[carats > 4])
+table(carats > 4)
+
+# What's the largest diamond?
+max(carats)
+
+
+# What's the most expensive diamond? 
+max(price)
+min(price) # least expensive
+
+# Assuming that these are paired information 
+# (`carats[1]` and `price[1]` are information about the same diamond), 
+# how many carats is the most expensive diamond? 
+
+## find the index value for the most expensive, use that in the carats vector
+price[price == max(price)] ## same value as max(price)
+which.max(price) # is 27750
+price[27750]
+price[which.max(price)]
+carats[which.max(price)]
+
+price[which.max(carats)]
+price[which.min(carats)]
+
+# find average price of diamonds under 1 carat
+
+# what is size of the largest diamond I can get for less than 1000
+
+```
+
+##  Functions + Indexing
+
+1. Write a function that takes in a numeric vector, changes any negative values to 0, and returns the changed vector. 
+
+```{r}
+x <- 2:-4
+x[x < 0] <- 0
+
+myfun <- function(orange) {
+   min(orange) + max(orange)
+}
+   
+myfun(4:-2)
+```
+
+
+
+
+##  Lists
+
+Back to the diamond data. 
+
+1. Make a boolean vector called `too_much` that is T/F to indicate if each element of `price` is larger than the median value of `price`.
+
+```{r}
+too_much <- price > median(price)
+
+```
+
+
+1. Put this vector, along with `carats` and `price` in a list called `diamond_info`. What are the different ways you can access the information inside this list? 
+
+```{r}
+diamond_info <- list(too_much, price, carats)
+# diamond_info[[2]] 
+
+diamond_info <- list(my_too_much = too_much, 
+                     my_price = price, 
+                     my_carats = carats)
+
+diamond_info$my_price[which.max(diamond_info$my_carats)]
+```
+
+
+1. Use `lapply` to find the mean of each variable. 
+Sidenote challenge question: why is the mean value of `too_much` what it is? 
+
+```{r}
+lapply(diamond_info, mean)
+
+```
+
+1. How can I remove the element `too_much` from the list?
+
+```{r}
+diamond_info$my_too_much <- NULL
+diamond_info$color <- c("clear", "yellow")
+str(diamond_info)
+```
+
+
+
+```{r}
+# price of the diamonds that are smaller than 1 carats
+diamond_info[['my_price']][diamond_info$my_carats < 1]
+diamond_info$my_price[diamond_info$my_carats < 1]
+
+
+
+# price of the diamonds that are larger than 4 carats or smaller than .3 carats
+
+## | is OR 
+## & is AND
+
+diamond_info$my_price[diamond_info$my_carats > 4 | diamond_info$my_carats < .3]
+
+## function that gives mean price of diamonds under size X
+
+smaller <- function(X){
+   mean(diamond_info$my_price[diamond_info$my_carats < X])
+}
+
+smaller(4)
+```
+
+
+
+
+## In class work 
+
+```{r}
+# rbind cbind
+a <- matrix(1:6, nrow = 2)
+b <- matrix(11:16, nrow = 2)
+
+
+# if else 
+
+x <- 1:6
+
+if (x > 2) { 
+   x <- x - 1 
+}  else {
+   x <- x + 34
+}
+   
+
+# Indexing
+# we can index by number (hard coding), by vector, by conditional statement, or by name list[['name of element']]
+
+# Functions
+
+### writing it
+my_fun <- function(var1 = 9, var2 = 2){
+   (x <- var1 + var2)
+}
+
+### using it
+my_fun(var2 = 8)
+my_fun()
+
+
+# Vectors vs lists
+
+
+# Is.list, Is.na, is.vector, is.numeric, is.XXXXX
+### helper functions
+y <- 1:6
+y[100] <- "b"
+y
+sum(is.na(y))
+x <- 1:6
+sum(x > 4)
+
+x <- c(T, F, T)
+sum(x)
+   
+# The boolean stuff (all, xor, etc) and the data type you can use them on
+# also helper function, but for logicals
+z <- 1:7
+any(is.na(z))
+xor(T, T)
+
+# Single vs. Double brackets
+   # list 
+# Dollar Sign notation
+   # list
+# Lapply
+
+# Recycling
+x <- 1:6
+y <- 1:10
+x + y 
+```

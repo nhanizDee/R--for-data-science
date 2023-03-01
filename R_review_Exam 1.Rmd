@@ -1,0 +1,223 @@
+---
+title: "Review_day_Exam1"
+author: "Nhan Nguyen"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+### R review before test 1- do the test 1 sample online 
+#### Stupid Dee all the way up
+
+
+Part 1 (12 points)
+1. Create the vector of all the integers from -10 to 10 in three ways: once using c(), once using :, and
+once using seq()
+2. Create the vector [3, 6, 9, 12, 15] in two ways, once using c() and once using seq()
+3. Create a vector that contains the log of the integers from 15 to 25. You must use a vectorized function.
+4. Create a vector of your three favorite foods. Then, in a separate command, add your favorite drink to
+end of the vector.
+```{r vector}
+# 3way for vector
+vec1<- c(-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10)
+vec2<- c(-10:10)
+vec3<- seq(-10, 21, 1)
+
+# create odd vector 
+odd_vec_1 <- c(3,6,9,12,15)
+odd_vec_2<- seq(3,17,3)
+
+
+log10(15:25)
+# create vector of food and drink
+like_best <- c("Rice","Grill Egg","Vietnamese Tradition Soup")
+like_best 
+like_best_drk<- append(like_best, "Coffe")
+like_best_drk
+```
+
+PArt 2
+Use vectorized functions for the following:
+a. Everyone got 5 points of extra credit on the midterm. Change the midterm grade vector to reflect this.
+b. How many students scored higher on the midterm than the final? (Note, use the extra credit version of
+the midterm for this)
+c. Create a new vector that contains the sum of each student’s midterm and the final exam grade divided
+by 2. (You are finding the average for each student)
+d. Create a boolean vector that indicates whether each student has an “A” average, greater than or equal
+to 90.
+e. Use this vector to print/display the names of the students who made an “A”.
+f. Challenge (+2 bonus points): How many students made an A if the midterm is 40% of the grade and
+the final is 60%.
+
+
+```{r}
+student <- c("a", "b", "c" ,"d" ,"e" ,"f", "g" ,"h", "i" ,"j", "k", "l", "m", "n", "o")
+midterm_grades <- c(95, 78, 76, 91, 87, 84, 92, 72, 72, 81, 82, 93, 69, 94, 80)
+final_exam_grades <- c(92, 90, 95, 87, 88, 98, 96, 79, 83, 75, 84, 73, 91, 78, 97)
+
+midterm_grades <- midterm_grades+5
+
+midterm_grades
+
+people<- sum(midterm_grades>final_exam_grades)
+people
+
+average<- (midterm_grades+final_exam_grades)/2
+average
+
+
+average2<- average>= 90
+average2
+
+
+#index
+student_A<- student[average2]
+
+```
+
+
+Using indexing, and using logical indexing when possible, answer the following questions. Your code
+output can be considered an answer.
+a. What is the age of the last car?
+a. How many green cars are there?
+a. How many cars are older than 20 years old?
+a. What are the names of the black cars?
+a. How many cars had prices greater than 250 or less than 50?
+a. Are any of the cars older than 400 years old?
+a. Create a new vector that contains the prices of the black and green cars.
+a. Check to see if "lambo" is the name of a car.
+
+
+```{r}
+# Data for Part 5
+car.names <- c("toyota", "ford", "honda", "bmw", "kia", "dodge", "jeep", "tesla", "subaru", "lexus")
+car.colors <- c( "pink", "blue", "blue", "black", "green",
+"green", "black", "black", "green", "yellow")
+car.ages <- c(13, 5, 36, 2, 4, 67, 24, 2, 6, 16)
+car.prices <- c(53, 87, 54, 532, 58, 99, 66, 132, 32, 345)
+
+
+print_age<- car.ages[length(car.names)]
+print_age
+
+corlor<- sum(car.colors=="green") #== assign the value type 
+corlor
+
+
+old_man<- sum(car.ages>20)
+old_man
+
+
+take_name<- car.names[car.colors=="black"]
+take_name
+
+up_and_down<- sum(car.prices>250,car.prices<50)
+up_and_down
+
+
+really_old<- car.ages>400
+really_old
+
+
+black_n_green<- c(car.prices[car.colors=="green"],
+                  car.prices[car.colors=="black"])
+black_n_green
+
+love_luxury<- car.names=="lambo"
+
+
+car.ages[length(car.names)]
+
+
+
+#Part 4
+ #list_value<- list(taggednames,colors,ages,prices)
+
+```
+
+
+Write a function that takes two vectors, finds the maximum value of each vector, and returns the sum of
+those maximums. Test the function on two vectors of your own creation.
+
+```{r}
+#part 5
+
+two_vector <- function(a,b) {
+  max1<-max(a)
+  max2<- max(b)
+  sum(max1,max2)
+}
+two_vector(car.ages,car.prices) # making any two vector can work, not assign a fix vector
+
+```
+
+Often you will need to recode values of a dataset. For example, if you have a survey of age data, you may
+want to convert any crazy values (like anything below 0 or above 110) to the special value NA.
+• Write a function called check.ages() that takes one argument: x, a vector of numbers (and we’ll
+assume the user will do so correctly, don’t worry about error checking here). The function should
+change any values of x that are below 0 or above 110 to NA, and then return the edited vector.
+• Test the function on the vector test_x given below. Your function should return 18 NA 97 NA
+test_x <- c(18, -6, 97, 230)
+
+```{r}
+#part 6
+check.ages<- function(x){
+
+  #filter<- c( x[x > 110] <- "NA",x[x < 0] <- "NA") #not really work
+  x[x > 110] <- "NA"
+  x[x < 0] <- "NA"
+  return(x)
+}
+test_x <- c(18, -6, 97, 230)
+
+check.ages(test_x)
+
+
+```
+
+
+Write a function drone_cost that takes two arguments: the distance of the delivery and whether or
+not the customer is a Brime member. The function should return the price of the delivery.
+2. Test the function for a Brime member that needs a delivery 14 miles from the warehouse, and 4 different
+non-Brime members that are 5, 15,35, and 60 miles from the warehouse .
+```{r}
+#part 7
+#drone_cost Function
+drone_cost <- function(distance, brime_member) {
+  if (brime_member) {
+    cost <- 2.00
+  } 
+  else if (distance < 0) {
+      return("Invalid")
+  }
+  else if (distance>=0 & distance <= 10 ) {
+    cost <- 4.00
+  } 
+  else if (distance > 10 & distance <= 20) {
+    cost <- 7.50
+  } 
+  else if (distance > 20 & distance <= 50) {
+    cost <- 9.00
+  } 
+  else {
+    cost <- 22.50
+  }
+  return(cost)
+}
+
+# Brime member, 14 miles
+cat("Cost for Brime member, 14 miles away = $", drone_cost(14, TRUE), "\n")
+
+# Non-Brime members, 5, 15, 35, and 60 miles
+cat("Cost for Non-Brime member, 5 miles away = $", drone_cost(5, FALSE), "\n")
+cat("Cost for Non-Brime member, 15 miles away = $", drone_cost(15, FALSE), "\n")
+cat("Cost for Non-Brime member, 35 miles away = $", drone_cost(35, FALSE), "\n")
+cat("Cost for Non-Brime member, 60 miles away = $", drone_cost(60, FALSE), "\n")
+
+
+
+```
