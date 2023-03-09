@@ -1,0 +1,437 @@
+---
+title: "Dataframes"
+author: "Dr. Shoemaker"
+date: "DATA 2401"
+output: slidy_presentation
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## What are data frames? 
+
+As I mentioned last class, a data frame is essentially a table for your data. 
+
+They're really just a list, but now every element of the list, aka every column, has to have the same length. 
+
+So now you can have a table where one column is a column of names, then a column of dates, then a column of salaries. 
+
+## Making Data frames
+
+You'll often load in data frames from an external source, but it's also useful to know how to make them yourself. 
+
+The function `data.frame()` takes vectors as arguments, and creates a table with a column for each vector. 
+
+```{r}
+
+# a vector of names
+name <- c("Ada", "Bob", "Chris", "Daisy", "Elda")
+
+# a vector of salaries
+salary <- c(95, 82, 75, 92, 102)
+
+# a vector of scores
+score <- c(6, 4, 2, 5, 9)
+
+# Combine into a dataframe
+# The names of the variables become the names of the columns! 
+people <- data.frame(name, salary, score, stringsAsFactors = F)
+people
+```
+
+
+# A Note on Factors
+
+
+
+- In a recent(ish) R update, it went from default `T` to default `F`, so you probably don't have to worry about factors anymore! 
+   + you can see what the default for your machine is by running `default.stringsAsFactors()`
+- This tells R that you want the strings to be kept as strings, and not as "factors", a different data type that's often used for building statistical models. 
+  + If your strings are for a categorical variable, you might want to have them as factors. 
+
+  
+Just keep this in mind! You might need to swap back and forth at some point, using `as.factor()` and `as.character()` 
+
+```{r}
+a <- c("a", "a", "b", "b")
+str(a)
+a
+
+a2 <- as.factor(a)
+str(a2)
+a2
+
+a3 <- as.character(a2)
+str(a3)
+a3
+```
+
+
+
+
+# Describing Structure
+
+Dataframes have properties you may want to use or reference. 
+
+For starters, the dimensions, the number of rows and columns.  
+
+- For example, the number of columns = the number of variables, which is a parameter in some statistical models
+
+```{r}
+# to get rows and columns:
+nrow(people)
+ncol(people)
+
+# to get both
+dim(people) # Note this returns a vector! 
+```
+
+
+---
+
+- The names of the columns and the rows:
+
+```{r}
+colnames(people)
+rownames(people)
+```
+
+If you want to change the names of the columns or rows, you just need to assign the new names to that function! 
+
+```{r}
+rownames(people) <- people$name
+colnames(people) <- c("Name", "Salary", "Score")
+people
+```
+
+Note: It's become typical practice to not use rownames, but rather have a variable that contains the identifying feature.
+
+To get rownames to a column, we have a function, `rownames_to_columns()`, or you can just save it as an new element to the dataframe! That works just like it did for lists (remember dataframes are just fancy lists!) 
+
+```{r}
+library(tidyverse) # need to load this to get access to the function.
+
+people <- rownames_to_column(people, var = "ID")
+# OR 
+people$id <- rownames(people)
+
+```
+--- 
+
+### Peeking at your data. 
+
+Different ways of looking at "glimpses" of the data frame: 
+
+One of the quickest is `glimpse`, but we can also use several different options.
+
+```{r}
+library(palmerpenguins)
+  # load in a library for access to fun penguin data
+library(dplyr) # or library(tidyverse), which we've already loaded !
+  # load in a library for access to our more "data science" functions
+
+glimpse(penguins)
+
+# For these, you can set the number of rows you want to see, or leave it blank
+head(penguins) # shows the first 6 rows, by default
+head(penguins, 2) # shows the first 2 rows
+tail(penguins, 2) # shows the last 2 rows
+
+ 
+slice(penguins, c(1,4)) # shows the rows you pass as the second argument
+
+
+View(penguins) # in RStudio, pulls up a new "tab" with the data
+```
+
+
+
+# Referencing Data
+
+Just like lists, we can use the dollar sign and double bracket notation to get whole vectors from the data frame
+
+```{r}
+people$Name
+
+people[['Score']]
+
+penguins$island
+
+```
+
+
+OR we can use single bracket notations to access more flexibly. 
+
+```{r}
+# the third element of the second column
+people[3, 2] 
+
+# all elements of the second column
+people[ , 2]
+
+# the third row
+people[3, ]
+
+# the column called 'Score'
+people[ , 'Score']
+
+# the second element in the Score variable
+people[2, 'Score']
+people['Chris', 'Score']
+```
+
+---
+
+We can combine this with vectors and logical operators to get just what we want! 
+
+```{r}
+people[2:4, ] # rows 2, 3 and 4
+
+people[ ,c('Name','Salary')] # just those two columns
+
+# all the columns for the rows where the salary value is greater than 90
+people[people$Salary > 90, ] 
+
+# the penguins on Torgersen island
+penguins[penguins$island == "Torgersen", ]
+```
+
+In general, it is safer to reference by variable name. 
+
+```{r, eval = F}
+penguins$species
+### is better than 
+penguins[ , 1]
+```
+
+Consider if you add an additional column, or they get changed around in order. "Hard coding" the specific row or column you want can lead to errors. 
+
+
+
+# Exercise: 
+
+- Create a vector of the number of points the Dash scored in the first 4 games
+of the last season (google "Dash" for the scores!).
+
+```{r}
+
+
+```
+
+- Create a vector of the number of points the Dash have allowed to be scored
+against them in each of the first 4 games of the season.
+
+```{r}
+
+```
+
+
+- Combine your two vectors into a dataframe called `games`.
+
+```{r}
+
+
+```
+
+- Create a new column "diff" that is the difference in points between the teams
+Hint: recall the syntax for assigning new elements (which in this case will be
+a vector) to a *list*! It's similar.
+
+```{r}
+
+
+```
+
+- Create a new column "won" which is TRUE if the Dash won the game. (Use logical operators).
+
+```{r}
+
+
+```
+
+- Create a vector of the opponent's names corresponding to the games played.
+
+```{r}
+
+
+```
+
+- Assign that vector to the rownames of the dataframe. 
+
+```{r}
+
+```
+
+- View your data frame to see how it looks!
+
+```{r}
+
+
+```
+
+
+# Working with Built-in R data 
+
+There are lots of data frames built into "base" R, as well as available in packages. 
+
+Go down to your console, type `data()` and hit tab. All of these are data that available to you right now in R. 
+
+Some are matrices, that you will need to turn into dataframes! You do this with `as.data.frame()` 
+
+You'll work more with these in today's lab. 
+
+# Working with CSV data! 
+
+One of the most common file formats you're going to come across is the Comma Separated Value format, `.csv`.
+
+Programs like Excel and Google Sheets can work with csv files, but it's important to remember that any sort of formulas or formatting you do on the csv file in those programs do NOT get saved. Only the data. 
+
+---
+
+If you open a csv in a program like Atom or Sublime, it will look like this: 
+
+```
+Col_1,Col_2,Col_3
+Abc,1,2.3
+Def,2,4.5
+Ghi,3,6.7
+```
+
+Literally, **comma separated values**. 
+
+- In general, different types of files use different types of separators. 
+- You won't see these separators if you open the file in excel, as excel translates "," into "the next cell" 
+- You can always open them in an editor like Sublime to see what's going on.
+- If the file has a different type of separator than a comma, you can specify this in `read.csv()` with the argument `sep = `
+
+
+---
+
+To read in a csv file, you use the function `read_csv()` 
+
+```{r}
+loaded_data <- read_csv('../Data/read_in_test.csv')
+
+# if you save it in the same folder
+# loaded_data <- read_csv("read_in_test.csv")
+```
+
+Note that you can either use a full path here, or the relative path from your current working directory. 
+
+# Other file types to read in
+
+- `read_csv()` reads comma delimited files 
+- `read_csv2()` reads semicolon separated files (common in countries where , is used as the decimal place)
+- `read_tsv()` reads tab delimited files 
+- `read_delim()` reads in files with any delimiter.
+
+---
+
+You can do the reverse as well! Let's add a column to the data frame and save it back as another csv file. 
+
+```{r}
+loaded_data$Col4 <- c(4,5,6)
+
+
+write_csv(loaded_data, "write_out_test2.csv")
+```
+
+
+# Note: Working directory
+
+When you knit the .Rmd file, your working directory is the place the .Rmd (and html) is saved.
+
+When you're working in the editor in RStudio (whether on .Rmd or .R files), the working directory isn't automatically that location. 
+
+- You can find out your current working directory with `getwd()` or More -> Go to working directory in the Files pane
+- You can set your working directory with `setwd()` or More -> Set as working directory in the Files pane, when you're "at" the location you want to set. 
+
+
+# Example: Gates Foundation Educational Grants
+
+In a new R script or .Rmd, use the `read.csv()` function to read the data from the `gates_donations.csv` file (available on BB) into a variable called `grants` using the `read.csv()`
+
+```{r}
+grants <- read_csv("../Data/gates_donations.csv")
+
+## if you save it in the same folder and haven't changed the name from blackboard: 
+# grants <- read.csv("gates_donations(4).csv")
+head(grants)
+```
+
+Be sure to set your working directory in RStudio, and that R did not treat strings as 
+factors! (`glimpse` to see this)
+
+
+- Use the glimpse function to look at the loaded data
+
+```{r}
+
+
+```
+
+
+- Create a variable `org` that contains the `organization` column of the dataset
+
+```{r}
+
+```
+
+
+- Confirm that the "organization" column is a vector using the `is.vector()` function. (This is a useful debugging tip if you hit errors later!)
+
+```{r}
+
+```
+
+
+Now you can ask some interesting questions about the dataset:
+
+- What was the mean grant value?
+
+```{r}
+
+```
+
+
+- What was the dollar amount of the largest grant?
+
+```{r}
+
+```
+
+
+- What was the dollar amount of the smallest grant?
+
+```{r}
+
+
+```
+
+
+- Which organization received the largest grant?
+
+```{r}
+
+```
+
+
+- Which organization received the smallest grant?
+
+```{r}
+
+```
+
+- How many grants were awarded in 2010?
+
+```{r}
+
+```
+
+- How much was awarded in 2010? 
+
+```{r}
+
+```

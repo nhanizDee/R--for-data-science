@@ -1,0 +1,555 @@
+---
+title: "Intro to dplyr"
+author: "Dr. Shoemaker"
+date: "Data2401"
+output:
+  slidy_presentation: default
+  pdf_document: default
+---
+
+
+# Today's Objectives
+
+Today is your official introduction to the tidyverse! We've got a lot to talk about:
+
+- tibbles, dataframes
+- factors, characters 
+- learning our first 4 "verbs" for dplyr: select, filter, mutate, arrange. 
+- piping our code using `%>%`
+
+Extra references:
+
+* https://r4ds.had.co.nz/transform.html 
+* https://stat545.com
+* https://www.rstudio.com/resources/cheatsheets/
+
+# Data Analysis via `data.frames` and `tibbles`
+
+The tidyverse (www.tidyverse.org) is "an opinionated collection of R packages designed for data science"
+
+This includes the plotting package we've seen a little of, `ggplot2`, as well as what we're going to use today, `tibble` and `dplyr`. You could load all these separately, or you could load them all in one go with the package `tidyverse`
+
+```{r}
+# install.packages("tidyverse") # run once per machine
+library(tidyverse) # run at the beginning of every session. 
+```
+
+You should see a few "conflicts". One thing this package does when you load it is look and see what other packages are using functions with similar names. 
+
+# Getting familiar with this data
+
+To start, set up our working directory and load a package for some data and the package we'll be using today: 
+
+```{r}
+# also, go change to your working directory to where this file is saved
+
+# you will likely need to run this the first time 
+# install.packages("gapminder") 
+library(gapminder)
+```
+
+
+
+Use `str` to get a good idea of what this contains, or the function `glimpse()`
+
+```{r}
+glimpse(gapminder)
+```
+
+
+
+```{r}
+gapminder
+```
+
+So, for a normal dataframe, you should be a little cautious about just printing this to the screen. It'll take up the whole screen and you really can't see much.
+
+However, this is something called a `tibble`, a special case of the data.frame provided by what's called the *tidyverse*. It's "short" for the class name of this object, a `tbl_df`.  
+
+
+Printing out the tibble: 
+
+```{r}
+class(gapminder)
+gapminder
+```
+
+
+You can still do all the same things as before:
+```{r}
+names <- names(gapminder)
+ncol(gapminder)
+length(gapminder)
+dim(gapminder)
+nrow(gapminder)
+summary(gapminder)
+my_gap <- gapminder
+my_gap$country <- as.character(my_gap$country)
+summary(my_gap)
+```
+
+
+# Contents of the data
+
+What about the year variable? It's an integer, but there are so few values, its actually more like a category.
+
+```{r}
+table(gapminder$year) # what years there are and the count of them 
+```
+
+
+
+
+The variables for country and contininent are categorical, and stored as a `factor`. 
+
+```{r}
+class(gapminder$continent)
+
+summary(gapminder$continent)
+
+levels(gapminder$continent)
+
+nlevels(gapminder$continent)
+
+```
+
+
+
+
+# A reminder on factors
+
+The levels of the factor continent are “Africa”, “Americas”, etc. and this is what’s usually presented to your eyeballs by R. 
+
+In general, the levels are friendly human-readable character strings, like “male/female” and “control/treated”. But don't forget that, under the hood, R is really storing integer codes 1, 2, 3, etc. Look at the result from `str(gapminder$continent)` if you are skeptical.
+
+
+```{r}
+str(gapminder$continent)
+```
+
+
+
+# Plot Preview 
+
+We can use another package called `ggplot2` to make lovely figures. The `continent` variable is easily mapped to what is called a `facet` or to colors and a legend. *We will be covering ggplot2 soon, so for now, just copy/paste if you want to play with them, and sit back and enjoy these plots for now* 
+
+
+
+```{r}
+p <- gapminder %>% 
+        filter(continent != "Oceania") %>% 
+        ggplot(aes(x = gdpPercap, y = lifeExp))  
+  # just initializes a graph OBJECT, p
+
+p <- p + scale_x_log10() # adds to p, put the x axis on a log scale
+
+p + geom_point() # scatterplot
+
+p + geom_point(aes(color = continent)) # map continent to color
+
+p + geom_point(alpha = (1/3), size = 3) + 
+  geom_smooth(lwd = 3, se = FALSE )
+#> `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
+
+p + geom_point(aes(color = continent), alpha = (1/3), size = 3) +
+  facet_wrap(~ continent) +
+  geom_smooth(lwd = 1.5, se = FALSE, method = "lm")
+#> `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+```
+
+
+# Quick comparasions
+
+Say we wanted to make a *bar chart* for the continents. 
+
+The base R way: 
+```{r }
+table(gapminder$continent)
+barplot(table(gapminder$continent))
+```
+
+And using ggplot: 
+
+```{r}
+gapminder %>% ggplot(aes(x = continent)) + geom_bar()
+```
+
+Similarly, the base R version of the above: 
+
+```{r}
+plot(log10(gapminder$gdpPercap), gapminder$lifeExp)
+```
+
+# Split-apply-combine
+
+
+So, hopefully this has convinced you that this is a great way to store and manipulate our data. (if not, stick with me anyways!)
+
+If you're interested, a lot of this goes back to the idea of "split-apply-combine'. The idea is that you break up the problem into manageable pieces, operate on each piece separately, then put the pieces all back together. The "classic" paper that discusses this is by Hadley Wickham: https://www.jstatsoft.org/article/view/v040i01
+
+
+# Using `dplyr`
+
+R has been around forever. It and it's predecessor, S have been the staple of statisticans. But, a new push towards data science has created a relatively large boom in new packages and techniques being available. 
+
+
+One of these new packages, called `dplyr` in included in the one we installed earlier, the `tidyverse`. A group of data scientists at RStudio worked on these packages in order to optimize R for data science, and you can find more info at (https://tidyverse.tidyverse.org). You just saw one of the other packages above, `ggplot2`, which is focused on data viz. 
+
+
+# Dplyr 
+
+Dplyr is the package for data manipulation, and is designed to be "fast, highly expressive and open-minded about how your data is stored".
+
+Everything we were doing earlier in the course with things like indexing and `which()` we can do now with `dplyr`. And way more, too!
+
+# Note on Creating Subsets... maybe don't.
+
+Say that I want to store just the Canadian information. 
+
+```{r}
+(canada <- gapminder[241:252, ])
+canada <- gapminder[which(gapminder$country == "Canada"),]
+```
+
+
+
+
+Stop and ask yourself. 
+
+> Do I want to create mini datasets for each level of some factor (or unique combination of several factors) … in order to compute or graph something?
+
+If YES, use data aggregation techniques or faceting in ggplot2 - don't subset your data. (Yes, I know I've been having you do that. We're going to learn tools so that we don't have to anymore if we dont need to.)
+
+If NO, then maybe you do really need a copy. But, a lot of functions let you use an argument `subset = `, so consider if you can use that instead. 
+
+Copies, excerpts, and hardcoded subsets clutter your workspace, are really easy to make mistakes with and can confuse you. 
+
+# Using `filter()`
+
+
+Let's go back to how I did the Canadian subset. 
+
+```{r, eval = F}
+(canada <- gapminder[241:252, ])
+```
+
+
+Why would this be bad? 
+
+What if I changed the order the rows were in? What if I got a refreshed version of the data that includes 2012? Now this hardcoded line isn't going to work anymore. 
+
+
+# filter is just... better. 
+
+Instead, let's use `filter()`, which takes logical expressions and returns rows for which that is true. (Remember how we used `which()` or `which.max()`? This is a slicker version of that.)
+
+```{r}
+filter(gapminder, country == "Canada")
+## the data is the first argument, and the function returns the rows where the second argument is true - it FILTERS to those rows.
+```
+
+```{r} 
+# filter to the observations with population greater than 79,000:
+filter(gapminder, pop < 79000)
+```
+
+
+
+```{r}
+## adding extra layers to your filters can either be done using a comma between arguments or by using an "and". 
+
+# filter to Sweden, with years greater than 1979
+filter(gapminder, country == "Sweden", year > 1979)
+filter(gapminder, country == "Sweden" & year > 1979)
+
+filter(gapminder, country == "Sweden" | year > 1979)
+  # or has to be done using the |
+```
+
+
+
+
+```{r}
+# filter to the observations for these three countries
+filter(gapminder, country %in% c("Rwanda", "Egypt", "Vietnam"))
+
+```
+
+# Your turn! 
+
+Filter the data yourself! 
+
+```{r}
+
+```
+
+
+
+# Pipe
+
+![The Treachery of Images](https://upload.wikimedia.org/wikipedia/en/b/b9/MagrittePipe.jpg)
+
+
+
+Before we do more with `dplyr`, let's talk a little about the "**pipe**" operator. 
+
+In the package `magrittr`, it looks like this: `%>%`, and you can think of it as "and then". *It sends the previous result to the first argument of the next function.*
+
+It is inspired by the UNIX pipe, | 
+
+Why `magrittr`?
+
+![The Treachery of Images](https://upload.wikimedia.org/wikipedia/en/b/b9/MagrittePipe.jpg)
+
+ 
+# What does that mean? 
+
+Thinking about a sequence of actions: find key, unlock car, start car, drive to school, park.
+
+In R psuedocode, this looks like: 
+
+> ` park(drive(start_car(find("keys")), to = "campus")) `
+
+When you use pipes, it's more natural (and easier to read)
+
+> ` find("keys") %>%  start_car() %>% drive(to = "campus") %>% park() `
+  
+  
+
+
+# Pipe Demo
+
+To type the pipe symbol in RStudio, use `cmd-shift-M` or `control-shift-M`.
+
+```{r}
+gapminder %>% head()  
+  ## same as head(gapminder) 
+```
+
+
+```{r}
+gapminder %>% head(3) 
+  ## same as head(gapminder, 3)
+```
+
+```{r}
+gapminder %>% filter(year == 2007) 
+  ## same as filter(gapminder, year == 2007)
+```
+
+
+# What if it's not first? 
+
+Most of the time, the dplyr commands are set up to use along with piping (it's why the data goes in the first spot!). But, there are other/older commands that need 
+
+If you want to send the data to something that isn't the first argument of the function, you can do so with `.`
+
+
+```{r}
+AsiaData <- filter(gapminder, continent == "Asia")
+plot(lifeExp ~ year, data = AsiaData)
+```
+
+```{r}
+gapminder %>% 
+  filter(continent == "Asia") %>% 
+  plot(lifeExp ~ year, .)
+```
+
+
+
+
+# Select with `select()`
+
+So we can use `filter()` to choose certain rows. We use `select()` to subset the data on variables or columns. 
+
+To get just the variables `year` and `lifeExp`, we do:
+
+```{r}
+select(gapminder, year, lifeExp)
+```
+
+
+To think about piping this, think:
+
+> take gapminder, then select the variables year and lifeExp, then show the first 4 rows:
+
+```{r}
+gapminder %>%
+  select(year, lifeExp) %>%
+  head(4)
+```
+
+# Select does more, too. 
+
+Select can also:
+
+- rename the variables you're requesting to keep
+- reposition the variables by using `everything()` to move a variable up to the front of the data. 
+
+```{r}
+gapminder %>%
+  filter(country == "Burundi", year > 1996) %>% 
+  select(yr = year, gdpPercap, lifeExp)  %>%  
+    ## renaming this variable!
+  select(gdpPercap, everything()) 
+    ## moving gdpPercap up to the front
+
+```
+
+There are lots of these "helper" variable selection functions. From the help files: 
+
+
+```{r, eval=F}
+select(iris, starts_with("Petal"))  # Starts with a prefix.
+select(iris, ends_with("Width")) # Ends with a suffix.
+select(iris, contains("etal")) # Contains a literal string.
+select(iris, matches(".t.")) # Matches a regular expression.
+select(iris, everything()) # Matches all variables.
+select(iris, last_col()) # Select last variable, possibly with an offset.
+select(iris, last_col(offset = 2))
+```
+
+
+What does that look like in our penguin data? 
+
+```{r}
+## select the columns that start with "bill" 
+
+
+```
+
+# A note: Print vs Assign
+
+As always, there is a difference between letting the output print to the screen:
+
+```{r}
+gapminder %>% filter(country == "Canada") 
+
+```
+
+
+and assigning the output to an object. 
+```{r}
+canada_minder <- gapminder %>% filter(country == "Canada")
+canada_minder
+```
+
+Always worth paying attention to which you're doing....
+
+
+```{r}
+my_gap <- gapminder
+#levels(my_gap$country) # uncomment to see the country options
+
+my_gap <- my_gap %>% 
+    filter(country %in% c("Egypt","China"), year > 1990) %>% 
+    select( pop, country, gdpPercap)
+
+```
+
+
+# Use `mutate()` to make a new variable
+
+Let's say we want a new variable to store each country's GDP. (We have the population and the per capita GDP)
+
+```{r}
+gapminder %>%
+  mutate(gdp = pop * gdpPercap) # not saved, just printed out. 
+gapminder
+```
+
+Well, those numbers are obnoxiously large. A quote from an intelligent human about this:
+
+> One thing that bothers me is large numbers presented without context… ‘If I added a zero to this number, would the sentence containing it mean something different to me?’ If the answer is ‘no,’ maybe the number has no business being in the sentence in the first place." - Randall Munroe, xkcd
+
+# A note on scientific notation
+
+Scientific notation is a good thing. If you need a refresher: https://en.wikipedia.org/wiki/Scientific_notation 
+
+That being said, it seems to bother y'all, so let me show you a way to force R to print all the digits. 
+
+`scipen` is one of the global options in R that you can change. (Run `options()` if you'd like to see the default settings on your machine for all the various global options). Scipen is: 
+
+> A penalty to be applied when deciding to print numeric values in fixed or exponential notation. Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than scipen digits wider. 
+
+Translation(ish): scipen is the number of digits wide that R "allows" a number to be to print normally. If it's longer than that value, it puts it in scientific notation. 
+
+So, if you put it at 999 wide.... it will (almost) never go to scientific notation. 
+
+```{r}
+num = 25259974097204
+num
+
+# changing the options in settings
+options(scipen = 999)
+
+num
+```
+
+
+# Arrange with `arrange()`
+
+You can reorder the rows using `arrange()`. The data is currently arranged by country, then year. Suppose we want it arranged by year, then country. 
+
+```{r}
+my_gap <- gapminder # getting a fresh copy, since we saved a smaller filtered data set here earlier.
+my_gap %>% arrange(desc(year), desc(country))
+```
+
+
+```{r}
+my_gap %>% arrange(year, country)
+```
+
+
+
+What if we just want data from 2007 sorted by life expectancy? 
+
+```{r}
+# we pipe!!
+my_gap %>% filter(year == 2007) %>% arrange(desc(lifeExp))
+
+```
+
+
+Want it in descending order? Use `desc()`!
+
+```{r}
+my_gap %>% filter(year < 2007, country == "Bolivia") %>% arrange(desc(lifeExp))
+```
+
+
+
+
+
+# Recap
+
+We learned: 
+
+- `filter()`: filters down observations to a subset that match the criteria, selects **rows**
+- `%>%`: Pipe! It changes the code flow to be more natural, read it as "and then"
+- `select()`: selects **columns** that match criteria.
+- `mutate()`: creates a column as specified
+- `arrange()`: arranges the dataframe in a certain way, useful for "find the biggest" type questions
+
+
+We also saw:
+
+- `.`: sends the content of the previous pipe here.
+- `ggplot()`: We'll get here soon! it makes pretty plots. 
+  - barplots
+  - histograms
+- factors! We've talked about these as variable types before, now we see them in action as categorical variables
+- `nlevels()`: counts the number of levels in the factor, similar in feel to `length`
+- `desc()`: when we sort or arrange, it changes it so that it's `desc`ending. 
+- `everything()`: along with other help functions, you can use in select to select... everything. 
+
+
+
+------ 
+
+*Note: These notes were adapted from https://stat545.com, provided under the creative commons license (https://creativecommons.org/licenses/by-sa/4.0/legalcode), thus these notes also fall under the Creative Commons license through the ShareAlike policy. Portions of the notes also adapted from Mine Çetinkaya-Rundel's STAT199 at Duke University, https://www2.stat.duke.edu/courses/Spring18/Sta199/ *
+
+
